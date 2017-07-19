@@ -1,0 +1,133 @@
+
+;=====================================================================
+;====================  cap idl startup   ============================
+;=====================================================================
+
+;============= Repertoires d'installation (a adapter) ================
+
+path_test = getenv ('CAP_PATH')
+stop
+if (path_test eq '') then setenv, 'XMAP_PATH='+(file_search ('/','isa_june01', /fully))[0]
+defsysv, '!isa_xwsm_path', getenv ('XMAP_PATH') + '/'
+defsysv, '!xwsm_path', !isa_xwsm_path+'xwsm/'
+
+;=====================================================================
+;readme_file = !xwsm_path + 'man/README'
+;openr, lu, readme_file, /get_lun
+;version_info = [' ']				
+;for k=0,49 do version_info = version_info + ' '
+;for k=0,2 do readu, lu, version_info
+;close, lu
+;vers_pos = strpos (version_info, '.')-2
+;date_pos = strpos (version_info, '(')+1
+;vers     = (strcompress(strtrim(strmid (version_info, vers_pos, 4)), /remove))[0]
+;date     = (strcompress(strtrim(strmid (version_info, date_pos, 5)), /remove))[0]
+;=====================================================================
+
+;defsysv,'!xwsm',{ $
+;   dir  : !xwsm_path, $
+;   vers : vers, $
+;   date : date}	   
+
+;============== Extension du chemin des librairies ===================
+
+;!path = !path+':'+expand_path('+'+!path_xwsm)
+!path = !path+':'+expand_path('+'+!isa_xwsm_path)
+@$XMAP_PATH/xwsm/setup/xmap_init.pro
+@init_atomdb_idl
+
+;============== Storing atomdb variables =============================
+
+common atomdb_com, line, coco, t
+
+atomdb = getenv('ATOMDB')
+if (n_elements(line) eq 0) then $
+  read_linelist,atomdb+'/apec_line.fits',line,t,n,l,/silent
+if (n_elements(coco) eq 0) then $
+  read_coco,atomdb+'/apec_coco.fits',coco,t,n,l,/silent
+
+;============== Definition de variables systemes =====================
+
+;------- Taille d'ecran --------------
+
+device, get_screen_size=sz
+if (1.*sz[0] / sz[1]) gt 2 then sz[0] = sz[0]/2.
+defsysv, '!x_scrs', sz[0]
+defsysv, '!y_scrs', sz[1]
+defsysv, '!w_xoffset', 0.
+
+;------- Affichage et couleurs -------
+
+device, decomposed=0
+device, retain=2
+
+;------- Variables systemes ----------
+
+defsysv, '!indef', -32768.
+
+;------- Chemins des repertoires -----
+
+defsysv, '!bck_spec_path', !xwsm_path + 'modelling/bck_spec/'
+;;defsysv, '!model_path',    !xwsm_data_path + 'models/'
+;;defsysv, '!data_path',     !xwsm_data_path + 'data/'
+defsysv, '!xmm_cal_path',  !xwsm_path + 'instruments/xmm/'
+defsysv, '!chandra_cal_path',  !xwsm_path + 'instruments/chandra/'
+
+;------- Compilations ----------------
+
+common xwsm_ptr, xwsm
+
+.com xwsm_polar_routines
+.com xmap_start
+.com xwsm_data_cubes
+.com xwsm_model_libs
+.com xwsm_spec_routines
+.com xwsm_cxb_routines
+.com xmm_energy_pdf
+.com xmap_icm_emis
+.com xmap_icm_profiles
+.com msvstcur_transform
+.com msvst
+.com cur_transform
+.com wt_transform
+.com compute_covmat_2d_hb
+
+;;====== Chandra stuff ===========
+
+.com xwsm_chandra
+.com xwsm_chandra_data_cubes
+.com xwsm_chandra_model_libs
+.com chandra_energy_pdf
+
+;;====== Athena stuff ===========
+
+;.com xmap_athena
+;.com xmap_athena_data_cubes
+;.com xmap_athena_model_libs
+
+;;====== Planck stuff ===========
+
+;.com hfi_colour_correction
+
+;;--------- IRIS idl startup HB 10/07 ----------------
+
+iris_dir = !isa_xwsm_path + '/galactic_maps/iris/'
+defsysv, '!IRISPRO', iris_dir
+defsysv, '!IRISDATA', iris_dir + 'maps'
+;;!path = !path+':'+expand_path('+'+!IRISPRO)
+
+;;----------------------------------------------------
+ 
+;------- Constantes pratiques --------
+
+defsysv, '!kev2k', 1.16059*1.e7
+defsysv, '!kev2j', 1.60219e-16
+defsysv, '!h',  6.626e-34
+defsysv, '!k',  1.3806e-23
+defsysv, '!cc', 2.998e8
+defsysv, '!mo', 1.9891d30
+defsysv, '!mp', 1.67262178d-27
+defsysv, '!pc', 30.856776d15
+defsysv, '!g',  6.67428d-11
+
+;=====================================================================	
