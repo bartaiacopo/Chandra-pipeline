@@ -1,3 +1,3 @@
-# hello-world
-test
-Ciao mi chiamo iacopo e sono ansioso di lavorare a questo progetto. Sono molto simpatico
+#Readme file for IACOPP Interactive Analysis of Chandra Observations and Profiles Production
+
+The pipeline works with IDL, it has been tested with GDL also
